@@ -22,7 +22,13 @@ You will need some of those files to complete the exercises.
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#coming soon
+library(GenomicRanges)
+gr <- GRanges(seqnames = c("chr1", "chr1", "chr2"),
+              ranges = IRanges(start = c(10000,11100,20000),
+                               end = c(10300,11500,20030)),
+              strand = c("+","-","+"),
+              score = c(10,20,15))
+gr
  
 ```
 
@@ -33,7 +39,12 @@ to use `start()`, `end()` and `strand()`,`seqnames()` within the `[]`. [Difficul
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#coming soon
+start(gr) 
+end(gr)
+seqnames(gr)
+strand(gr)
+width(gr)
+gr[strand(gr)=="+",]
  
 ```
 
@@ -43,7 +54,18 @@ to use `start()`, `end()` and `strand()`,`seqnames()` within the `[]`. [Difficul
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#coming soon
+require(rtracklayer)
+session <- browserSession("UCSC",url = 'http://genome-euro.ucsc.edu/cgi-bin/')
+genome(session) <- "mm9"
+## choose CpG island track on chr12
+query_ucsc <- ucscTableQuery(session, track="CpG Islands",table="cpgIslandExt",
+                        range=GRangesForUCSCGenome("mm9", "chr12"))
+## get the GRanges object for the track
+track(query_ucsc)
+
+query_ref <- ucscTableQuery(session, track="RefSeq Genes",table="refGene",
+                        range=GRangesForUCSCGenome("mm9", "chr12"))
+track(query_ref)
  
 ```
 
@@ -52,7 +74,14 @@ to use `start()`, `end()` and `strand()`,`seqnames()` within the `[]`. [Difficul
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#coming soon
+prom.refgene <- promoters(track(query_ref), upstream = 1000, downstream = 1000, use.names = FALSE)
+prom.refgene
+
+ov = findOverlaps(track(query_ucsc),track(query_ref))
+
+#Calculate the percentage
+prom_ov_perc <- (ov@nLnode/ov@nRnode)*100
+prom_ov_perc
  
 ```
 
