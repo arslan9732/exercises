@@ -106,7 +106,24 @@ polygon(d, col="red")
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#coming soon
+library(genomation)
+filePathPeaks=system.file("extdata",   
+              "wgEncodeHaibTfbsGm12878Sp1Pcr1xPkRep1.broadPeak.gz",
+                      package="compGenomRData")
+
+filePathPeaks2=system.file("extdata",   
+              "wgEncodeHaibTfbsGm12878Sp1Pcr1xPkRep2.broadPeak.gz",
+                      package="compGenomRData")
+# read the peaks from a bed file
+pk1.gr=readBroadPeak(filePathPeaks)
+pk2.gr=readBroadPeak(filePathPeaks2)
+
+# find the canonical peaks in both replicates
+pk.gr = subsetByOverlaps(pk1.gr, pk2.gr)
+
+# only chr21 peaks
+pk.gr.chr21 <- pk.gr[seqnames(pk.gr)=="chr21",]
+pk.gr.chr21
  
 ```
 
