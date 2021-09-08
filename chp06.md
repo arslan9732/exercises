@@ -91,7 +91,13 @@ promoters. [Difficulty: **Beginner/Intermediate**]
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#coming soon
+ov_subset <- subsetByOverlaps(track(query_ucsc),track(query_ref))
+ov_length <- width(ov_subset)
+hist(ov_length, main="Distribution of overlaped CpG island lengths",
+     col = "red",)
+d <- density(width(ov_subset))
+plot(d, main="Distribution of overlaped CpG island lengths")
+polygon(d, col="red")
  
 ```
 
