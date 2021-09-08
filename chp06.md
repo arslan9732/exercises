@@ -134,7 +134,15 @@ pk.gr.chr21
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#coming soon
+library(Rsamtools)
+library(GenomicAlignments)
+bamfilePath=system.file("extdata",
+            "wgEncodeHaibTfbsGm12878Sp1Pcr1xAlnRep1.chr21.bam",
+                      package="compGenomRData")
+# get reads for regions of interest from the bam file
+pk1.gr.chr21 <- pk1.gr[seqnames(pk1.gr)=="chr21",]
+param <- ScanBamParam(which=pk1.gr.chr21)
+counts=countBam(bamfilePath, param=param)
  
 ```
 
