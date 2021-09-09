@@ -1,7 +1,5 @@
-## Exercises and solutions for Chapter 4
-
 For this set of exercises we will be using the expression data shown below:
-```{r dataLoadClu,eval=FALSE}
+```{r dataLoadClu,eval=TRUE}
 expFile=system.file("extdata",
                     "leukemiaExpressionSubset.rds",
                     package="compGenomRData")
@@ -14,7 +12,7 @@ mat=readRDS(expFile)
 1. We want to observe the effect of data transformation in this exercise. Scale the expression matrix with the `scale()` function. In addition, try taking the logarithm of the data with the `log2()` function prior to scaling. Make box plots of the unscaled and scaled data sets using the `boxplot()` function. [Difficulty: **Beginner/Intermediate**]
 
 **solution:**
-```{r,echo=FALSE,eval=FALSE}
+```{r,echo=FALSE,eval=TRUE}
 boxplot(mat,outline=F)
 matscl=scale(mat)
 boxplot(matscl,outline=F)
@@ -186,7 +184,7 @@ removing 4th eigenvector does less damage than removing 2nd eigenvector
 **solution:**
 component 6 is the most important component, removing that creates the highest
 reconstruction error
-```{r,echo=FALSE,eval=FALSE}
+```{r,echo=TRUE,eval=TRUE}
 set.seed(101)
 library(fastICA)
 ica.res=fastICA(t(mat),n.comp=10) # apply ICA
@@ -213,7 +211,7 @@ order(rec.err)
 **solution:**
 Among the values we tried, visually seperation is better for 10 and above
 perplexity values. Smaller values results in less visual seperation between subtypes.
-```{r,echo=FALSE,eval=FALSE}
+```{r,echo=TRUE,eval=TRUE}
 library("Rtsne")
 annotation_col = data.frame(
   LeukemiaType =substr(colnames(mat),1,3))
@@ -244,7 +242,7 @@ tsne_out <- Rtsne(t(mat),perplexity = 10) # Run TSNE
 plot(tsne_out$Y,col=as.factor(annotation_col$LeukemiaType),
      pch=19)
      
-tsne_out <- Rtsne(t(mat),perplexity = 100) # Run TSNE
+tsne_out <- Rtsne(t(mat),perplexity = 15) # Run TSNE
  #image(t(as.matrix(dist(tsne_out$Y))))
 # Show the objects in the 2D tsne representation
 plot(tsne_out$Y,col=as.factor(annotation_col$LeukemiaType),
