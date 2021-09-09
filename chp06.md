@@ -183,17 +183,78 @@ transcriptFilechr21=system.file("extdata",
 ```
 
 **solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+```{r}
+# get transcription start sites on chr21
+transcriptFilechr21=system.file("extdata",
+                      "refseq.hg19.chr21.bed",
+                      package="compGenomRData")
+feat=readTranscriptFeatures(transcriptFilechr21,
+                            remove.unusual = TRUE,
+                            up.flank = 500, down.flank = 500)
+prom=feat$promoters # get promoters from the features
+
+
+bamfilePathchr21=system.file("extdata",
+                      "wgEncodeHaibTfbsGm12878Sp1Pcr1xAlnRep1.chr21.bam",
+                      package="compGenomRData")
+
+
+
+sm=ScoreMatrix(bamfilePathchr21,prom,
+               type="bam",strand.aware = TRUE)
+
+
+# look for the average coverage
+plotMeta(sm, profile.names = "SP1 ChIP-seq", xcoords = c(-500,500),
+         ylab="SP1 ChIP-seq coverage",dispersion = "se",
+         xlab="bases around TSS")
+
+heatMatrix(sm,order=TRUE,xcoords = c(-500,500),
+           xlab="bases around TSS")
+
 ```
 
 2. Extract -500,+500 bp regions around the TSSes on chr20. Use H3K4me3 (`H1.ESC.H3K4me3.chr20.bw`) and H3K27ac (`H1.ESC.H3K27ac.chr20.bw`) ChIP-seq enrichment data in the `compGenomRData` package and create heatmaps and average signal profiles for regions around the TSSes.[Difficulty: **Intermediate/Advanced**]
 
 **solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+```{r}
+# get transcription start sites on chr20
+transcriptFilechr20=system.file("extdata",
+                      "refseq.hg19.chr20.bed",
+                      package="compGenomRData")
+feat=readTranscriptFeatures(transcriptFilechr20,
+                            remove.unusual = TRUE,
+                            up.flank = 500, down.flank = 500)
+prom=feat$promoters # get promoters from the features
+
+# get for H3K4me3 values around TSSes
+# we use strand.aware=TRUE so - strands will
+# be reversed
+H3K4me3File=system.file("extdata",
+                      "H1.ESC.H3K4me3.chr20.bw",
+                      package="compGenomRData")
+
+
+H3K27acFile=system.file("extdata",
+                      "H1.ESC.H3K27ac.chr20.bw",
+                      package="compGenomRData")
+
+sml=ScoreMatrixList(c(H3K4me3=H3K4me3File,
+                      H3K27ac=H3K27acFile),prom,
+                      type="bigWig",strand.aware = TRUE)
+
+
+
+plotMeta(sml,profile.names = c("H3K4me3", "H3K27ac"), xcoords = c(-500,500),
+         ylab="H3K4me3 enrichment",dispersion = "se",
+         xlab="bases around TSS")
+
+set.seed(1029)
+multiHeatMatrix(sml,order=TRUE,xcoords = c(-500,500),
+                xlab="bases around TSS",winsorize = c(0,95),
+                matrix.main = c("H3K4me3","H3K27ac"),
+                column.scale=TRUE,
+                clustfun=function(x) kmeans(x, centers=3)$cluster)
 ```
 
 3. Download P300 ChIP-seq peaks data from the UCSC browser. The peaks are locations where P300 binds. The P300 binding marks enhancer regions in the genome. (**HINT**:  group: "regulation", track: "Txn Factor ChIP", table:"wgEncodeRegTfbsClusteredV3", you need to filter the rows for "EP300" name.) Check enrichment of H3K4me3, H3K27ac and DNase-seq (`H1.ESC.dnase.chr20.bw`) experiments on chr20 on and arounf the P300 binding-sites, use data from `compGenomRData` package. Make multi-heatmaps and metaplots. What is different from the TSS profiles? [Difficulty: **Advanced**]
