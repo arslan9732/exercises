@@ -14,7 +14,6 @@ dir(folder) # will show the contents of the folder
 
 folder=(system.file(package="QuasR", "extdata"))
 library(Rqc)
-folder = system.file(package="ShortRead", "extdata/E-MTAB-1147")
 
 # feeds fastq.qz files in "folder" to quality check function
 qcRes=rqc(path = folder, pattern = "^chip", openBrowser=FALSE)
@@ -26,7 +25,23 @@ rqcCycleQualityBoxPlot(qcRes)
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#coming soon
+library(QuasR)
+# obtain a list of fastq file paths
+fastqFiles <- system.file(package="QuasR",
+                          "extdata",
+                          c("chip_1_1.fq.bz2",
+                            "chip_2_1.fq.bz2")
+)
+
+# defined processed fastq file names
+outfiles <- paste(tempfile(pattern=c("processed_1_",
+                                     "processed_2_")),".fq",sep="")
+
+# process fastq files
+# trim 2-4 bases on the 3' end depending on the quality scores (we will remove 4 bases)
+
+preprocessReads(fastqFiles, outfiles,
+                truncateEndBases=4)
  
 ```
 
