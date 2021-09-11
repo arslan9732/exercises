@@ -49,7 +49,8 @@ preprocessReads(fastqFiles, outfiles,
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#excercise_samples_chip_single.txt
+excercise_samples_chip_single.txt
+
 FileName	SampleName
 chip_1_1.fq.bz2	Sample1
 chip_2_1.fq.bz2	Sample2
