@@ -49,7 +49,31 @@ preprocessReads(fastqFiles, outfiles,
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+#excercise_samples_chip_single.txt
+FileName	SampleName
+chip_1_1.fq.bz2	Sample1
+chip_2_1.fq.bz2	Sample2
+processed_1.chip.fq	Sample3
+processed_2.chip.fq	Sample4
+```
+
+```{r}
+# copy example data to current working directory
+file.copy(system.file(package="QuasR", "extdata"), ".", recursive=TRUE)
+
+# genome file in fasta format
+genomeFile <- "extdata/hg19sub.fa"
+
+# text file containing sample names and fastq file paths
+sampleFile <- "extdata/excercise_samples_chip_single.txt"
+
+# create alignments 
+proj <- qAlign(sampleFile, genomeFile)
+
+#alignment stats
+alignmentStats(proj)
+
+
+qQCReport(proj, pdfFilename = "Alignment stats.pdf", a4layout = TRUE) 
 ```
 
