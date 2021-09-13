@@ -4,7 +4,7 @@
 
 Here, import an example count table and do some exploration of the expression data. 
 
-```{r exSetup1, eval=FALSE}
+```{r exSetup1}
 counts_file <- system.file("extdata/rna-seq/SRP029880.raw_counts.tsv",
                            package = "compGenomRData")
 coldata_file <- system.file("extdata/rna-seq/SRP029880.colData.tsv", 
@@ -15,34 +15,84 @@ coldata_file <- system.file("extdata/rna-seq/SRP029880.colData.tsv",
 
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
-#coming soon
+counts <- as.matrix(read.table(counts_file, header = T, sep = '\t'))
+geneLengths <- counts[,11]
+tpm <- apply(counts[,1:10], 
+             2,
+             function(x) {
+                     10^6 * (((x)/geneLengths)/(sum(x/geneLengths)))
+             })
+
+# Second method to count TPM
+rpk <- apply( subset(counts, select = c(-width)), 2, 
+              function(x) x/(geneLengths/1000))
+#normalize by the sample size using rpk values
+tpm1 <- apply(rpk, 2, function(x) x / sum(as.numeric(x)) * 10^6)
  
 ```
 
 2. Plot a heatmap of the top 500 most variable genes. Compare with the heatmap obtained using the 100 most variable genes. [Difficulty: **Beginner**]
 
-**solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+**solution:** The clustering of genes in top 500 variable is vice verse as compared to top 100 variable genes.
+```{r}
+V <- apply(tpm, 1, var)
+#sort the results by variance in decreasing order 
+#and select the top 500 and 100 genes 
+selectedGenes500 <- names(V[order(V, decreasing = T)][1:500])
+selectedGenes100 <- names(V[order(V, decreasing = T)][1:100])
+library(pheatmap)
+
+
+pheatmap(tpm[selectedGenes500,], scale = 'row', 
+         show_rownames = FALSE, 
+         annotation_col = colData)
+
+
+pheatmap(tpm[selectedGenes100,], scale = 'row', 
+         show_rownames = FALSE, 
+         annotation_col = colData)
 ```
 
 3. Re-do the heatmaps setting the `scale` argument to `none`, and `column`. Compare the results with `scale = 'row'`. [Difficulty: **Beginner**]
 
 **solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+```{r}
+
+pheatmap(tpm[selectedGenes500,], scale = 'row', 
+         show_rownames = FALSE, 
+         annotation_col = colData,
+         main = "Heatmap of top 500 variable genes woth 'row' scale")
+pheatmap(tpm[selectedGenes500,], scale = 'none', 
+         show_rownames = FALSE, 
+         annotation_col = colData,
+         main = "Heatmap of top 500 variable genes with 'none' scale")
+
+pheatmap(tpm[selectedGenes100,], scale = 'row', 
+         show_rownames = FALSE, 
+         annotation_col = colData,
+         main = "Heatmap of top 100 variable genes with 'row' scale")
+pheatmap(tpm[selectedGenes100,], scale = 'none', 
+         show_rownames = FALSE, 
+         annotation_col = colData,
+         main = "Heatmap of top 100 variable genes with 'none' scale")
 ```
 
 4. Draw a correlation plot for the samples depicting the sample differences as 'ellipses', drawing only the upper end of the matrix, and order samples by hierarchical clustering results based on `average` linkage clustering method. [Difficulty: **Beginner**]
 
 **solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
-```
+```{r}
+# correlation plot
 
+library(stats)
+correlationMatrix <- cor(tpm)
+
+library(corrplot)
+corrplot(correlationMatrix, order = 'hclust', 
+         addrect = 2, addCoef.col = 'white', 
+         number.cex = 0.7, hclust.method = 'average',
+         method = 'ellipse', type = 'upper') 
+
+```
 5. How else could the count matrix be subsetted to obtain quick and accurate clusters? Try selecting the top 100 genes that have the highest total expression in all samples and re-draw the cluster heatmaps and PCA plots. [Difficulty: **Intermediate**]
 
 **solution:**
