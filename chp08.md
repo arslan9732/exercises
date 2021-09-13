@@ -96,33 +96,115 @@ corrplot(correlationMatrix, order = 'hclust',
 5. How else could the count matrix be subsetted to obtain quick and accurate clusters? Try selecting the top 100 genes that have the highest total expression in all samples and re-draw the cluster heatmaps and PCA plots. [Difficulty: **Intermediate**]
 
 **solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+```{r}
+Only.Counts <- counts[,1:10]
+S <- apply(Only.Counts, 1, sum)
+#sort the results by total increasing order 
+#and select the top 100 genes 
+selectedTopGenes <- names(S[order(S, decreasing = T)][1:100])
+
+pheatmap(Only.Counts[selectedTopGenes,], scale = 'row', 
+         show_rownames = FALSE, 
+         annotation_col = colData,
+         main = "Heatmap of top 100 highly expressed genes")
+
+library(stats)
+library(ggplot2)
+library(ggfortify)
+#transpose the matrix 
+M <- t(Only.Counts[selectedTopGenes,])
+# transform the counts to log2 scale 
+M <- log2(M + 1)
+#compute PCA 
+pcaResults <- prcomp(M)
+
+#plot PCA results making use of ggplot2's autoplot function
+#ggfortify is needed to let ggplot2 know about PCA data structure. 
+autoplot(pcaResults, data = colData, colour = 'group')
+
 ```
 
 6. Add an additional column to the annotation data.frame object to annotate the samples and use the updated annotation data.frame to plot the heatmaps. (Hint: Assign different batch values to CASE and CTRL samples). Make a PCA plot and color samples by the added variable (e.g. batch). [Difficulty: Intermediate]
 
 **solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+```{r}
+annot <- colData
+annot$batch <- c("cDNA", "cDNA", "size fractionation",
+                 "size fractionation","cDNA", "cDNA",
+                 "size fractionation","size fractionation",
+                 "cDNA", "cDNA")
+pheatmap(Only.Counts[selectedTopGenes,], scale = 'row', 
+         show_rownames = FALSE, 
+         annotation_col = annot,
+         main = "Heatmap of top 100 highly expressed genes")
+
+M <- t(Only.Counts[selectedTopGenes,])
+# transform the counts to log2 scale 
+M <- log2(M + 1)
+#compute PCA 
+pcaResults <- prcomp(M)
+
+#plot PCA results making use of ggplot2's autoplot function
+#ggfortify is needed to let ggplot2 know about PCA data structure. 
+autoplot(pcaResults, data = annot, colour = 'batch')
 ```
 
 7. Try making the heatmaps using all the genes in the count table, rather than sub-selecting. [Difficulty: **Advanced**]
 
 **solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+```{r}
+pheatmap(Only.Counts, scale = 'row', 
+         show_rownames = FALSE, 
+         annotation_col = colData,
+         main = "Heatmap of All genes")
+#Error in hclust(d, method = method) : NA/NaN/Inf in foreign function call (arg 10)
+
+# Due to above error, we have to remove all the rows which have 0 values across the samples
+
+SelectedGenes <- Only.Counts[ rowSums(Only.Counts) > 0, ]
+
+pheatmap(SelectedGenes, scale = 'row', 
+         show_rownames = FALSE, 
+         annotation_col = colData,
+         main = "Heatmap of All genes")
+
 ```
 
 8. Use the [`Rtsne` package](https://cran.r-project.org/web/packages/Rtsne/Rtsne.pdf) to draw a t-SNE plot of the expression values. Color the points by sample group. Compare the results with the PCA plots. [Difficulty: **Advanced**]
 
 **solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+```{r}
+library(Rtsne)
+library(ggplot2)
+library(ggpubr)
+
+set.seed(42) # Set a seed if you want reproducible results
+
+#transpose the matrix 
+M <- t(Only.Counts)
+# transform the counts to log2 scale 
+M <- log2(M + 1)
+#compute PCA 
+
+pcaResults <- prcomp(M)
+
+#plot PCA results making use of ggplot2's autoplot function
+#ggfortify is needed to let ggplot2 know about PCA data structure. 
+PCA = autoplot(pcaResults, data = colData, colour = 'group')
+#compute t-SNE
+tsne_out <- Rtsne(M,perplexity = 3)
+
+tsne_plot <- data.frame(x = tsne_out$Y[,1], y = tsne_out$Y[,2],
+col = colData$group)
+
+
+tsne = ggplot(tsne_plot) + geom_point(aes(x=x, y=y, color=col)) +
+theme_classic() + ggtitle("t-SNE plot perplexity = 3") +
+theme(plot.title = element_text(hjust = 0.5))
+
+PCA
+tsne
+
 ```
 
 
@@ -142,6 +224,27 @@ coldata_file <- system.file("extdata/rna-seq/SRP029880.colData.tsv",
 - Set up a DESeqDataSet object.
 - Filter out genes with low counts.
 - Run DESeq2 contrasting the `CASE` sample with `CONTROL` samples. 
+
+```{r, DEG testing}
+library(DESeq2)
+counts <- read.table(counts_file)
+counts <- subset(counts, select = c(-width))
+colData <- read.table(coldata_file, header = T, sep = "\t")
+designformula <- '~ group'
+
+dds <- DESeqDataSetFromMatrix(countData = counts,
+                              colData = colData,
+                              design = as.formula(designformula))
+#and remove those that don't have at least 1 read. 
+dds <- dds[ rowSums(DESeq2::counts(dds)) > 1, ]
+
+dds <- DESeq(dds)
+#compute the contrast for the 'group' variable where 'CTRL' 
+#samples are used as the control group. 
+DEresults = results(dds, contrast = c("group", 'CASE', 'CTRL'))
+#sort results by increasing p-value
+DEresults <- DEresults[order(DEresults$pvalue),]
+```
 
 Now, you are ready to do the following exercises: 
 
