@@ -1,12 +1,4 @@
----
-title: 'compgen2021: Week 3 exercises'
-author: 'Arslan Tariq'
-output:
-  pdf_document: default
-  pdf: default
----
-
-# Exercises for Week 3
+# Exercises and solutions for Chapter 5
 
 
 ### Classification 
