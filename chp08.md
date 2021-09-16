@@ -525,10 +525,102 @@ gseaResults$less
 
 6.  Use the topGO package (https://bioconductor.org/packages/release/bioc/html/topGO.html) to re-do the GO term analysis. Compare and contrast the results with what has been obtained using the `gProfileR` package. Which tool is faster, `gProfileR` or topGO? Why? [Difficulty: **Advanced**]
 
-**solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+**solution:** gProfileR is faster than topGO. And results are different, because gProfileR using a deprecated package relying on outdated data.
+```{r}
+library(topGO)
+library(GO.db)
+library(biomaRt)
+library(Rgraphviz)
+require(org.Hs.eg.db)
+
+
+# gene list vector with pvalue
+geneList <- DEGs$pvalue
+names(geneList) <- rownames(DEGs)
+
+# For Biological process
+selection <- function(allScore){ return(allScore < 0.05)} # function that returns TRUE/FALSE for p-values<0.05
+allGO2genes <- annFUN.org(whichOnto="BP",
+                          feasibleGenes=NULL, 
+                          mapping="org.Hs.eg.db", 
+                          ID="symbol")
+GOdata.BP <- new("topGOdata",
+              ontology="BP",
+              allGenes=geneList,
+              annot=annFUN.GO2genes,
+              GO2genes=allGO2genes,
+              geneSel=geneSelectionFun,
+              nodeSize=10)
+
+#Kolmogorov-Smirnov Testing
+results.ks.BP <- runTest(GOdata.BP, algorithm = "classic", statistic = "ks")
+
+# For Molecular Function
+selection <- function(allScore){ return(allScore < 0.05)} # function that returns TRUE/FALSE for p-values<0.05
+allGO2genes <- annFUN.org(whichOnto="MF",
+                          feasibleGenes=NULL, 
+                          mapping="org.Hs.eg.db", 
+                          ID="symbol")
+GOdata.MF <- new("topGOdata",
+              ontology="MF",
+              allGenes=geneList,
+              annot=annFUN.GO2genes,
+              GO2genes=allGO2genes,
+              geneSel=geneSelectionFun,
+              nodeSize=10)
+
+
+results.ks.MF <- runTest(GOdata.MF, algorithm = "classic", statistic = "ks")
+
+# For Cellular Components
+selection <- function(allScore){ return(allScore < 0.05)} # function that returns TRUE/FALSE for p-values<0.05
+allGO2genes <- annFUN.org(whichOnto="CC",
+                          feasibleGenes=NULL, 
+                          mapping="org.Hs.eg.db", 
+                          ID="symbol")
+GOdata.CC <- new("topGOdata",
+              ontology="CC",
+              allGenes=geneList,
+              annot=annFUN.GO2genes,
+              GO2genes=allGO2genes,
+              geneSel=geneSelectionFun,
+              nodeSize=10)
+
+
+results.ks.CC <- runTest(GOdata.CC, algorithm = "classic", statistic = "ks")
+
+
+goEnrichment.BP <- GenTable(GOdata.BP,
+                         KS = results.ks.BP,
+                         orderBy = "KS",
+                         topNodes = 100,
+                         numChar = 99)
+
+goEnrichment.MF <- GenTable(GOdata.MF,
+                         KS = results.ks.MF,
+                         orderBy = "KS",
+                         topNodes = 100,
+                         numChar = 99)
+
+goEnrichment.CC <- GenTable(GOdata.CC,
+                         KS = results.ks.CC,
+                         orderBy = "KS",
+                         topNodes = 100,
+                         numChar = 99)
+
+All.GO <- rbind(goEnrichment.MF, goEnrichment.BP, goEnrichment.CC)
+
+All.GO$KS <- as.numeric(All.GO$KS)
+All.GO <- All.GO[All.GO$KS < 0.05,] # filter terms for KS p<0.05
+All.GO
+
+par(cex = 0.3)
+showSigOfNodes(GOdata.CC, score(results.ks.CC), firstSigNodes = 3, useInfo = "def")
+showSigOfNodes(GOdata.BP, score(results.ks.BP), firstSigNodes = 3, useInfo = "def")
+showSigOfNodes(GOdata.MF, score(results.ks.MF), firstSigNodes = 3, useInfo = "def")
+# using Fisher exect test
+#resultFisher <- runTest(GOdata, algorithm = "classic", statistic = "fisher")
+#GenTable(GOdata, classicFisher = resultFisher, topNodes = 10)
 ```
 
 7. Given a gene set annotated for human, how can it be utilized to work on _C. elegans_ data? (Hint: See `biomaRt::getLDS`). [Difficulty: **Advanced**]
