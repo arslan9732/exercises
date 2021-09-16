@@ -652,25 +652,143 @@ colData_file <- system.file('extdata/rna-seq/SRP049988.colData.tsv',
 
 1. Run RUVSeq using multiple values of `k` from 1 to 10 and compare and contrast the PCA plots obtained from the normalized counts of each RUVSeq run. [Difficulty: **Beginner**]
 
-**solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+**solution:** when `K=9`  `RUVs` is better. And for `RUVg` `K=1` is better.
+```{r}
+counts <- as.matrix(read.table(counts_file, header = T, sep = '\t'))
+colData <- read.table(colData_file, header = T, sep = '\t', 
+                      stringsAsFactors = TRUE)
+# remove 'width' column from counts
+countData <- as.matrix(subset(counts, select = c(-width)))
+# # simplify condition descriptions
+colData$source_name <- ifelse(colData$group == 'CASE', 
+                              'EHF_overexpression', 'Empty_Vector')
+
+library(EDASeq)
+
+# create a seqExpressionSet object using EDASeq package 
+set <- newSeqExpressionSet(counts = countData,
+                           phenoData = colData)
+
+library(RUVSeq)
+
+# RUVs ----
+# make a table of sample groups from colData 
+differences <- makeGroups(colData$group)
+
+for(k in 1:9) {
+  set_s <- RUVs(set, unique(rownames(set)), 
+                k=k, differences) #all genes
+  plotPCA(set_s, col=as.numeric(colData$group), 
+          cex = 0.9, adj = 0.5, 
+          main = paste0('with RUVs, k = ',k), 
+          ylim = c(-1, 1), xlim = c(-0.6, 0.6))
+}
+
+# RUVg ----
+HK_genes <- read.table(file = system.file("extdata/rna-seq/HK_genes.txt",
+                                          package = 'compGenomRData'),header = FALSE)
+# let's take an intersection of the house-keeping genes with the genes available
+# in the count table
+house_keeping_genes <- intersect(rownames(set), HK_genes$V1)
+
+# now, we use these genes as the empirical set of genes as input to RUVg.
+# we try different values of k and see how the PCA plots look 
+
+for(k in 1:9) {
+  set_g <- RUVg(x = set, cIdx = house_keeping_genes, k = k)
+  plotPCA(set_g, col=as.numeric(colData$group), cex = 0.9, adj = 0.5, 
+          main = paste0('with RUVg, k = ',k), 
+          ylim = c(-1, 1), xlim = c(-1, 1), )
+}
+
 ```
 
 2. Re-run RUVSeq using the `RUVr()` function. Compare PCA plots from `RUVs`, `RUVg` and `RUVr` using the same `k` values and find out which one performs the best. [Difficulty: **Intermediate**]
 
-**solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
- 
+**solution:** `RUVs` is perform better as compare to `RUVr` and `RUVg`.
+```{r}
+library(edgeR)
+
+# Residuals from negative binomial GLM regression of UQ-normalized
+# counts on covariates of interest, with edgeR
+design <- model.matrix(~ colData$group)
+dgeFull <- DGEList(counts = countData, 
+                   samples = colData, 
+                   group = colData$group)
+
+dgeFull <- calcNormFactors(dgeFull, method="upperquartile")
+
+dgeFull <- estimateGLMCommonDisp(dgeFull, design)
+dgeFull <- estimateGLMTagwiseDisp(dgeFull, design)
+
+fit <- glmFit(dgeFull, design)
+res <- residuals(fit, type="deviance")
+# RUVr normalization (after UQ)
+setUQ <- betweenLaneNormalization(set, which="upper")
+controls <- rownames(set)
+set_r <- RUVr(set, controls, k=1, res)
+
+par(mfrow = c(3, 3))
+for(k in 1:9) {
+  set_r <- RUVr(set, controls, k=k, res)
+  plotPCA(set_r, col=as.numeric(colData$group), cex = 0.9, adj = 0.5, 
+          main = paste0('with RUVr, k = ',k), 
+          ylim = c(-1, 1), xlim = c(-1, 1), )
+}
+
 ```
 
 3. Do the necessary diagnostic plots using the differential expression results from the EHF count table. [Difficulty: **Intermediate**]
 
 **solution:**
-```{r,echo=FALSE,eval=FALSE}
-#coming soon
+```{r}
+library(DESeq2)
+#set up DESeqDataSet object
+dds <- DESeqDataSetFromMatrix(countData = countData,
+                              colData = colData, 
+                              design = ~ group)
+# filter for low count genes
+dds <- dds[rowSums(DESeq2::counts(dds)) > 10]
+
+# insert the covariates W1 and W2 computed using RUVs into DESeqDataSet object
+colData(dds) <- cbind(colData(dds), 
+                      pData(set_s)[rownames(colData(dds)), 
+                                   grep('W_[0-9]', 
+                                        colnames(pData(set_s)))])
+# update the design formula for the DESeq analysis (save the variable of
+# interest to the last!)
+design(dds) <- ~ W_1 + W_2 + group 
+# repeat the analysis 
+dds <- DESeq(dds)
+# extract deseq results 
+res <- results(dds, contrast = c('group', 'CASE', 'CTRL'))
+res <- subset(res, padj < 0.1)
+summary(res)
+
+# diagnostic plots
+DESeq2::plotMA(object = res, ylim = c(-5, 5))
+
+library(ggplot2)
+ggplot(data = as.data.frame(res), aes(x = pvalue)) + 
+  geom_histogram(bins = 100)
+
+countsNormalized <- DESeq2::counts(dds, normalized = TRUE)
+selectedGenes <- names(sort(apply(countsNormalized, 1, var), 
+                            decreasing = TRUE)[1:500])
+
+plotPCA(countsNormalized[selectedGenes,], 
+        col = as.numeric(colData$group), adj = 0.5, 
+        xlim = c(-0.5, 0.5), ylim = c(-0.5, 0.6))
+
+library(EDASeq)
+par(mfrow = c(1, 2))
+plotRLE(countData, outline=FALSE, ylim=c(-4, 4), 
+        col=as.numeric(colData$group), 
+        main = 'Raw Counts')
+plotRLE(DESeq2::counts(dds, normalized = TRUE), 
+        outline=FALSE, ylim=c(-4, 4), 
+        col = as.numeric(colData$group), 
+        main = 'Normalized Counts')
  
 ```
 
