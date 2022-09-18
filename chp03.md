@@ -108,13 +108,13 @@ require(mosaic)
 par(mfcol=c(4,3))
 par(mar=c(5.1-2,4.1-1,4.1,2.1-2))
 d=c(rnorm(1000,mean=10,sd=8))
+par(mar=c(1,1,1,1))
 hist(d,main="",
      col="black",border="white",breaks=20,xlab="",ylab=""
-     )
+)
 abline(v=mean(d),col="red")
 mtext(expression(paste(mu,"=10")),cex=0.6)
 mtext("normal",cex=0.8,line=1)
-
 bimod10=rowMeans(do(1000)*rnorm(5,mean=10,sd=8))
 bimod30=rowMeans(do(1000)*rnorm(15,mean=10,sd=8))
 bimod100=rowMeans(do(1000)*rnorm(50,mean=10,sd=8))
@@ -127,16 +127,14 @@ mtext("n=30",side=2,cex=0.8,line=2)
 hist(bimod100,xlim=c(0,20),main="",xlab="",ylab="",breaks=20,col="gray",
      border="gray")
 mtext("n=100",side=2,cex=0.8,line=2)
-
 d=rexp(1000)
 hist(d,main="",
      col="black",border="white",breaks=20,xlab="",ylab=""
-     )
+)
 abline(v=mean(d),col="red")
 mtext(expression(paste(mu,"=1")),cex=0.6)
 mtext("exponential",cex=0.8,line=1)
 mtext("Distributions of different populations",line=2)
-
 exp10 =rowMeans(do(2000)*rexp(10))
 exp30 =rowMeans(do(2000)*rexp(30))
 exp100=rowMeans(do(2000)*rexp(100))
@@ -147,14 +145,12 @@ hist(exp30,xlim=c(0,2),main="",xlab="",ylab="",breaks=20,col="gray",
      border="gray")
 hist(exp100,xlim=c(0,2),main="",xlab="",ylab="",breaks=20,col="gray",
      border="gray")
-
 d=runif(1000)
 hist(d,main="",
      col="black",border="white",breaks=20,xlab="",ylab=""
-     )
+)
 abline(v=mean(d),col="red")
 mtext(expression(paste(mu,"=0.5")),cex=0.6)
-
 mtext("uniform",cex=0.8,line=1)
 unif10 =rowMeans(do(1000)*runif(10))
 unif30 =rowMeans(do(1000)*runif(30))
