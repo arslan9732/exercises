@@ -91,6 +91,10 @@ quantile((do(1000)*mean(sample(pois1,30,replace=T)))[,1],probs=c(0.025,0.975))
 6. Compare the theoretical confidence interval of the mean from the `t.test` and the bootstrap confidence interval. Are they similar? [Difficulty: **Intermediate/Advanced**]  
 
 **solution:**
+```{r}
+quantile((do(1000)*mean(sample(pois1,30,replace=T)))[,1],probs=c(0.025,0.975))
+t.test(pois1)[4]
+```
 They are all similar but not identical
 
 
