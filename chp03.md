@@ -37,7 +37,7 @@ samples=sd(means)
 
 clt.se=70/sqrt(6) # estimate standard error from population parameters
 
-data1=matrix(rnorm(6000,mean=200,sd=70),ncol=6
+data1=matrix(rnorm(6000,mean=200,sd=70),ncol=6)
 sd(rowMeans(data1))
 
 data2=matrix(rnorm(6000,mean=200,sd=70),ncol=10)
