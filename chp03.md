@@ -48,6 +48,18 @@ If we simulate more sets of points keeping the same sample size n=6 as indicated
 3. Simulate 30 random variables using the `rpois()` function. Do this 1000 times and calculate the mean of each sample. Plot the sampling distributions of the means
 using a histogram. Get the 2.5th and 97.5th percentiles of the
 distribution. [Difficulty: **Beginner/Intermediate**] 
+```{r}
+set.seed(100)
+pois1=rpois(30,lambda=5)
+simulate_1k <- do(1000) * mean(rpois(30,lambda=5))
+hist(simulate_1k$mean, col = "blue", main = "Simulated data distribution")
+quant <- quantile(simulate_1k$mean, probs=c(0.025,0.975))
+abline(v=quantile(quant[1]), col = "red")
+abline(v=quantile(quant[2]), col = "red")
+text(x=quantile(quant[1]),y=150,"2.5%",adj=c(1,0),col="red")
+text(x=quantile(quant[2]),y=150,"97.5%",adj=c(1,0),col="red")
+
+
 4. Use the `t.test()` function to calculate confidence intervals
 of the mean on the first random sample `pois1` simulated from the `rpois()` function below. [Difficulty: **Intermediate**] 
 ```{r exRpoisChp3,eval=FALSE}
