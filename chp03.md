@@ -58,7 +58,7 @@ abline(v=quantile(quant[1]), col = "red")
 abline(v=quantile(quant[2]), col = "red")
 text(x=quantile(quant[1]),y=150,"2.5%",adj=c(1,0),col="red")
 text(x=quantile(quant[2]),y=150,"97.5%",adj=c(1,0),col="red")
-
+````
 
 4. Use the `t.test()` function to calculate confidence intervals
 of the mean on the first random sample `pois1` simulated from the `rpois()` function below. [Difficulty: **Intermediate**] 
