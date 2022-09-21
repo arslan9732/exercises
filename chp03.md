@@ -325,7 +325,7 @@ returned by `summary`. See `?summary.lm`. [Difficulty:**Intermediate/Advanced**]
 **solution:**
 ```{r,echo=FALSE,eval=FALSE}
 summary(lm(y~x))
- 
+summary(lm(y~x))$coefficients #last column contains p-values
 ```
 
 5. Plot the residuals vs. the fitted values plot, by calling the `plot()` 
