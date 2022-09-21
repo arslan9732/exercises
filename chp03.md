@@ -382,12 +382,12 @@ summary(mod3)
 all terms are significant.
 
 
-10. Is using H3K4me3 and H3K27me3 better than the model with only H3K4me3? [Difficulty:**Intermediate**] 
+9. Is using H3K4me3 and H3K27me3 better than the model with only H3K4me3? [Difficulty:**Intermediate**] 
 
 **solution:**
 Using both histone marks are only slightly better based on R-squared values compared to just using H3K4me3.
 
-11. Plot H3k4me3 vs. H3k27me3. Inspect the points that do not
+10. Plot H3k4me3 vs. H3k27me3. Inspect the points that do not
 follow a linear trend. Are they clustered at certain segments 
 of the plot? Bonus: Is there any biological or technical interpretation
 for those points? [Difficulty:**Intermediate/Advanced**] 
