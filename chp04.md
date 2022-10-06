@@ -141,14 +141,15 @@ We will be using the leukemia expression data set again. You can use it as shown
 1. Do PCA on the expression matrix using the `princomp()` function and then use the `screeplot()` function to visualize the explained variation by eigenvectors. How many top components explain 95% of the variation? [Difficulty: **Beginner**]
 
 **solution:**
-First 25 components explain 95% of the variation
+First 24 components explain 95% of the variation
 ```{r,echo=TRUE,eval=TRUE}
 pr = princomp(scale(mat))
 
 # Scree plot
 screeplot(pr, main = "Screeplot showing first 10 PCs.",npcs = 10)
 
-summary(pr)
+summary(pr) 
+# The Cumulative Proportion shows that first 24 components explain 95% of the variation
  
 ```
 
